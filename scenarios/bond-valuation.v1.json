@@ -1,0 +1,33 @@
+{
+  "missionId": "bond-valuation-v1",
+  "title": "Bond Valuation Desk: Yield & Price Analysis",
+  "briefing": "Meridian Capital Partners manages a $2.8 billion fixed-income portfolio. The head of credit research has asked you to price a newly issued 10-year corporate bond from Apex Manufacturing (rated BBB) and analyze its return profile. The bond has a $1,000 face value and pays semiannual coupons. The market requires a yield to maturity of 6.25% for bonds of this risk profile. Your task is to compute the bond price, current yield, capital gains yield, and yield to call (the bond is callable after 5 years at $1,050). Prepare a brief memo for the portfolio manager with your findings.",
+  "studentRole": "Fixed Income Analyst",
+  "learningObjectives": [
+    "Compute bond price given coupon rate, YTM, and maturity",
+    "Calculate current yield and capital gains yield",
+    "Compute yield to call for a callable bond",
+    "Explain the relationship between coupon rate, YTM, and bond price"
+  ],
+  "bondData": {
+    "faceValue": 1000,
+    "couponRate": 0.07,
+    "yearsToMaturity": 10,
+    "paymentsPerYear": 2,
+    "ytm": 0.0625,
+    "callable": true,
+    "callYears": 5,
+    "callPrice": 1050
+  },
+  "messinessLevel": 1,
+  "deliverables": ["bond price", "current yield", "capital gains yield", "yield to call", "investment memo"],
+  "uiCopy": {
+    "submitButton": "Submit Bond Analysis",
+    "memoPlaceholder": "Based on the bond price of $X and YTM of X%, I recommend..."
+  },
+  "tolerance": {
+    "price": 0.50,
+    "yield": 0.001
+  },
+  "taxRate": 0.25
+}

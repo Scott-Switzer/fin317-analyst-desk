@@ -13,6 +13,7 @@ import {
   Calculator,
   CheckCircle2,
   AlertCircle,
+  HelpCircle,
 } from "lucide-react";
 import Card from "@/components/ui/Card";
 import DataTable from "@/components/ui/DataTable";
@@ -69,6 +70,7 @@ function withinTolerance(user: string, expected: number, tol = 0.02) {
 
 export default function ProjectFalconPage() {
   const router = useRouter();
+  const [showHints, setShowHints] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [score, setScore] = useState(0);
   const [flags, setFlags] = useState<Record<string, boolean>>({});
@@ -127,7 +129,7 @@ export default function ProjectFalconPage() {
     let correct = 0;
     const keys = Object.keys(expected);
     keys.forEach((k) => {
-      const ok = withinTolerance(data[k as keyof FormData] as string, expected[k]);
+      const ok = withinTolerance((data as Record<string, string>)[k], expected[k]);
       newFlags[k] = ok;
       if (ok) correct++;
     });
@@ -185,6 +187,44 @@ export default function ProjectFalconPage() {
       </nav>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <Badge variant="error">Difficulty: Challenging</Badge>
+          <button
+            type="button"
+            onClick={() => setShowHints(!showHints)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            {showHints ? "Hide Formula Hints" : "Guided Mode: Show Hints"}
+          </button>
+        </div>
+
+        {showHints && (
+          <Card title="Formula Reference" className="mb-6">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { label: "After-Tax Cost of Debt", formula: "r_d × (1 - T)" },
+                { label: "Cost of Preferred", formula: "D_p / P_p" },
+                { label: "Cost of Equity (CAPM)", formula: "r_RF + β × (r_M - r_RF)" },
+                { label: "WACC", formula: "w_d × r_d(1-T) + w_p × r_p + w_s × r_s" },
+                { label: "NPV", formula: "Σ CF_t / (1+r)^t - Initial Outlay" },
+                { label: "IRR", formula: "Rate where NPV = 0" },
+                { label: "MIRR", formula: "Solve: PV(costs) = FV(inflows) / (1+MIRR)^n" },
+                { label: "Payback", formula: "Years until cumulative CFs ≥ Initial Outlay" },
+                { label: "Market Value of Debt", formula: "PV(Coupons) + PV(Face Value) at YTM" },
+              ].map((h) => (
+                <div key={h.label} className="rounded-md border border-slate-800 bg-slate-900/40 p-3">
+                  <div className="text-xs font-semibold text-emerald-400">{h.label}</div>
+                  <div className="mt-1 text-xs text-slate-400 font-mono">{h.formula}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 rounded-md bg-amber-950/30 border border-amber-900/40 p-3 text-xs text-amber-300">
+              <strong>Key reminders:</strong> Use market values (not book values) for weights. Apply the tax shield to the cost of debt. For MIRR, use WACC as the finance rate and 10% as the reinvestment rate.
+            </div>
+          </Card>
+        )}
+
         {/* Mission Briefing */}
         <Card title="Mission Briefing" className="mb-6" action={<FileText className="h-4 w-4 text-slate-500" />}>
           <div className="space-y-3 text-sm leading-relaxed text-slate-300">

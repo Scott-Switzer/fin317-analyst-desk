@@ -1,0 +1,12 @@
+{
+  "missionId": "bond-valuation-v1",
+  "generatedAt": "2026-05-12T06:00:00.000Z",
+  "bondPrice": 1055.151189,
+  "currentYield": 0.066341,
+  "capitalGainsYield": -0.003841,
+  "yieldToCall": 0.065500,
+  "recommendation": {
+    "stance": "buy_or_hold",
+    "rationale": "The bond trades at a premium ($1,055.15 > $1,000 face) because the coupon rate (7%) exceeds the YTM (6.25%). The current yield is 6.63% and the YTM is 6.25%, implying a small capital loss if held to maturity. The YTC (6.55%) is slightly higher than YTM, suggesting call risk is modest. For a BBB-rated bond, this offers an attractive spread over Treasuries."
+  }
+}

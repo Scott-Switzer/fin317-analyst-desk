@@ -1,0 +1,35 @@
+{
+  "missionId": "stock-valuation-v1",
+  "title": "Stock Valuation Desk: Gordon Growth & CAPM",
+  "briefing": "Avalon Equity Research covers the consumer discretionary sector. A portfolio manager has asked you to value Nova Consumer Brands (ticker: NCB), a fictional mid-cap company. NCB just paid a dividend of $2.40 per share and has grown dividends at 5% annually for the past 5 years. The risk-free rate is 4.0% and the market risk premium is 6.5%. NCB's beta is 1.20. Analysts expect dividend growth to continue at 5% for the next 3 years, then decelerate to 3.5% thereafter. Using the Gordon Growth Model (constant growth) and a two-stage model, estimate NCB's intrinsic value and compute the cost of equity using both CAPM and the dividend growth approach. Write a brief equity research note with your valuation and recommendation.",
+  "studentRole": "Equity Research Analyst",
+  "learningObjectives": [
+    "Apply the Gordon Growth Model (constant growth) to value a stock",
+    "Value a stock using a two-stage dividend growth model",
+    "Compute cost of equity using CAPM",
+    "Compute cost of equity using the dividend growth approach",
+    "Compare intrinsic value to market price and make a recommendation"
+  ],
+  "stockData": {
+    "dividend0": 2.40,
+    "growthRateShort": 0.05,
+    "growthRateLong": 0.035,
+    "shortTermYears": 3,
+    "riskFreeRate": 0.04,
+    "marketRiskPremium": 0.065,
+    "beta": 1.20,
+    "marketPrice": 52.00,
+    "sharesOutstanding": 150000000
+  },
+  "messinessLevel": 1,
+  "deliverables": ["constant growth intrinsic value", "two-stage intrinsic value", "cost of equity CAPM", "cost of equity DGM", "equity research note"],
+  "uiCopy": {
+    "submitButton": "Submit Valuation",
+    "memoPlaceholder": "Based on our DCF and relative valuation analysis, NCB appears..."
+  },
+  "tolerance": {
+    "price": 1.00,
+    "rate": 0.005
+  },
+  "taxRate": 0.25
+}

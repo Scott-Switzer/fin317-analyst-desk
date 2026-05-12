@@ -157,6 +157,20 @@ If Docker is unavailable or broken, use the hosted Supabase project directly:
 
 ## Troubleshooting
 
+### Hydration Warnings in Browser Console
+
+If you see hydration warnings in the browser console mentioning these extra attributes on `<body>`:
+- `data-new-gr-c-s-check-loaded`
+- `data-gr-ext-installed`
+
+These are injected by **Grammarly** or other browser extensions at runtime. They are not app bugs. To verify:
+
+1. **Test in Incognito/Private mode** (where extensions are typically disabled).
+2. **Disable Grammarly** and other content-modifying extensions for `localhost:3000`.
+3. The app root already includes `suppressHydrationWarning` on `<html>` to safely ignore extension-injected attributes.
+
+If warnings persist without extension attributes, inspect for real SSR/client mismatches (e.g., `typeof window` checks, date formatting, random values in render).
+
 ### Docker Daemon Issues
 If Docker commands hang or report I/O errors:
 - Open Docker Desktop → **Troubleshoot** (bug icon) → **Clean / Purge data**

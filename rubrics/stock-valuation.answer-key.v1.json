@@ -1,0 +1,12 @@
+{
+  "missionId": "stock-valuation-v1",
+  "generatedAt": "2026-05-12T06:00:00.000Z",
+  "costOfEquityCAPM": 0.118000,
+  "costOfEquityDGM": 0.098462,
+  "intrinsicValueConstantGrowth": 37.058824,
+  "intrinsicValueTwoStage": 31.151377,
+  "recommendation": {
+    "stance": "underweight_or_sell",
+    "rationale": "NCB's intrinsic value ($31.15 two-stage, $37.06 constant growth) is significantly below the market price of $52.00. Using CAPM (11.8% cost of equity), the stock appears overvalued. Even the more optimistic DGM cost of equity (9.85%) does not justify the current price. The portfolio manager should consider underweighting or selling NCB unless there are growth catalysts not captured in our conservative dividend-based valuation."
+  }
+}

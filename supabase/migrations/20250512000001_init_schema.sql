@@ -178,8 +178,21 @@ CREATE INDEX IF NOT EXISTS idx_class_analytics_class ON class_analytics(class_id
 CREATE INDEX IF NOT EXISTS idx_event_log_user ON event_log(user_id);
 CREATE INDEX IF NOT EXISTS idx_event_log_type ON event_log(event_type);
 
--- RLS policies (placeholder comments; implement after auth is wired)
--- ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE calculation_results ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE ai_feedback ENABLE ROW LEVEL SECURITY;
+-- Enable Row Level Security on all public tables
+-- RLS is enabled inline to prevent any window of unprotected access.
+-- Granular policies are created in the next migration:
+--   supabase/migrations/20250512000002_enable_rls_and_demo_policies.sql
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE classes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE class_memberships ENABLE ROW LEVEL SECURITY;
+ALTER TABLE missions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mission_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE calculation_results ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_feedback ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE badges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_badges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE class_analytics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_log ENABLE ROW LEVEL SECURITY;
