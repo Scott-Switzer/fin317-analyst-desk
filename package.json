@@ -41,5 +41,8 @@
     "tsx": "^4.19.0",
     "typescript": "^5",
     "vitest": "^4.1.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp", "unrs-resolver"]
   }
 }
