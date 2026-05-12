@@ -1,0 +1,14 @@
+{
+  "agent_docs": [
+    "AGENTS.md",
+    "README.md",
+    "docs/PRODUCT_SPEC.md",
+    "docs/ARCHITECTURE.md",
+    "docs/DATA_BOUNDARY.md",
+    "docs/AI_FEEDBACK_SPEC.md",
+    "docs/COURSE_CONTEXT_SUMMARY.md"
+  ],
+  "optional_docs": [
+    "private_corpus/*.md"
+  ]
+}

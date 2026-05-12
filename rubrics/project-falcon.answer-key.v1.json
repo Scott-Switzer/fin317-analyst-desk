@@ -1,0 +1,33 @@
+{
+  "missionId": "project-falcon-v1",
+  "generatedAt": "2026-05-12T04:12:46.855Z",
+  "capitalStructure": {
+    "marketValueOfDebt": 161582602.39377725,
+    "marketValueOfPreferred": 128571428.57142855,
+    "marketValueOfEquity": 1600000000,
+    "totalCapital": 1890154030.9652057,
+    "weights": {
+      "wd": 0.08548647345489892,
+      "wp": 0.0680216672636852,
+      "ws": 0.8464918592814159
+    }
+  },
+  "costsOfCapital": {
+    "afterTaxCostOfDebt": 0.037500000000000006,
+    "costOfPreferred": 0.07,
+    "costOfEquityCAPM": 0.10325000000000001,
+    "costOfEquityDGM": 0.09725,
+    "wacc": 0.09536754393382287
+  },
+  "projectMetrics": {
+    "npv": 218390447.29634202,
+    "irr": 0.22507769669008637,
+    "mirr": 0.15089865777682077,
+    "paybackPeriod": 3.3214285714285716,
+    "discountedPaybackPeriod": 4.200736183041792
+  },
+  "recommendation": {
+    "decision": "Accept",
+    "rationale": "NPV is positive (218390447.30) and IRR (22.51%) is greater than WACC (9.54%)."
+  }
+}

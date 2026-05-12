@@ -1,0 +1,54 @@
+{
+  "missionId": "project-falcon-v1",
+  "title": "Project Falcon: Expansion Funding Decision",
+  "briefing": "AeroDyne Industries is a fictional aerospace components manufacturer headquartered in Dayton, Ohio. Founded in 1998, the company specializes in advanced composite materials for commercial and defense aviation. With annual revenues of $2.4 billion and a workforce of 8,500 employees, AeroDyne has established a strong market position in North America and is exploring expansion into Southeast Asian markets. The board of directors has asked the finance team to evaluate a proposed $450 million capital investment to build a new production facility in Vietnam (codenamed 'Project Falcon'). As a Junior Financial Analyst, you are tasked with estimating AeroDyne's weighted average cost of capital (WACC) and applying capital budgeting techniques to recommend whether the project should be funded.",
+  "studentRole": "Junior Financial Analyst",
+  "learningObjectives": [
+    "Calculate the market value and weights of each capital component",
+    "Compute the after-tax cost of debt, cost of preferred stock, and cost of equity using CAPM and the dividend growth model",
+    "Estimate the firm's WACC",
+    "Evaluate a capital project using NPV, IRR, MIRR, payback period, and discounted payback period",
+    "Write a professional recommendation memo that integrates quantitative findings with qualitative reasoning"
+  ],
+  "capitalStructure": {
+    "debt": {
+      "bookValue": 150000000,
+      "couponRate": 0.06,
+      "ytm": 0.05,
+      "yearsToMaturity": 10,
+      "faceValue": 150000000
+    },
+    "preferred": {
+      "dividendPerShare": 4.50,
+      "requiredReturn": 0.07,
+      "sharesOutstanding": 2000000
+    },
+    "equity": {
+      "sharesOutstanding": 50000000,
+      "pricePerShare": 32.00,
+      "beta": 1.15,
+      "riskFreeRate": 0.04,
+      "marketRiskPremium": 0.055,
+      "dividendPerShare": 1.60,
+      "growthRate": 0.045
+    }
+  },
+  "projectCashFlows": {
+    "initialOutlay": 450000000,
+    "annualFlows": [120000000, 135000000, 150000000, 140000000, 130000000, 110000000, 95000000, 80000000],
+    "projectLife": 8
+  },
+  "decisionRule": "mutually exclusive",
+  "messinessLevel": 1,
+  "deliverables": ["capital structure table", "WACC calculation", "project metrics", "recommendation memo"],
+  "uiCopy": {
+    "submitButton": "Submit Analysis",
+    "memoPlaceholder": "Write your recommendation memo here..."
+  },
+  "professorNotes": "This mission tests WACC and capital budgeting fundamentals.",
+  "tolerance": {
+    "default": 0.01,
+    "percentage": 0.005
+  },
+  "taxRate": 0.25
+}

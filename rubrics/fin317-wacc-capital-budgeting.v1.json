@@ -1,0 +1,72 @@
+{
+  "name": "FIN 317 WACC + Capital Budgeting Rubric",
+  "version": "1.0",
+  "criteria": [
+    {
+      "id": "numerical_accuracy",
+      "name": "Numerical Accuracy",
+      "weight": 40,
+      "description": "Correct calculations for WACC, NPV, IRR, MIRR, payback"
+    },
+    {
+      "id": "decision_quality",
+      "name": "Decision Quality",
+      "weight": 20,
+      "description": "Recommendation aligns with NPV/IRR analysis"
+    },
+    {
+      "id": "written_reasoning",
+      "name": "Written Reasoning",
+      "weight": 20,
+      "description": "Clear justification using course concepts"
+    },
+    {
+      "id": "professional_memo",
+      "name": "Professional Memo Quality",
+      "weight": 10,
+      "description": "Formatting, tone, completeness"
+    },
+    {
+      "id": "course_alignment",
+      "name": "Course Alignment",
+      "weight": 10,
+      "description": "Uses correct formulas and decision rules"
+    }
+  ],
+  "badgeTriggers": [
+    {
+      "badgeId": "perfect-wacc",
+      "condition": "all wacc fields correct"
+    },
+    {
+      "badgeId": "capital-budgeting-pro",
+      "condition": "all capital budgeting fields correct"
+    },
+    {
+      "badgeId": "senior-analyst-memo",
+      "condition": "written reasoning score >= 90%"
+    }
+  ],
+  "commonMistakes": [
+    {
+      "id": "book-vs-market",
+      "description": "Using book values instead of market values for weights",
+      "concept": "WACC weights"
+    },
+    {
+      "id": "forget-tax-shield",
+      "description": "Forgetting tax shield on debt",
+      "concept": "After-tax cost of debt"
+    },
+    {
+      "id": "npv-sign-error",
+      "description": "Sign error in NPV calculation",
+      "concept": "Capital budgeting"
+    },
+    {
+      "id": "irr-reinvestment",
+      "description": "Assuming IRR reinvestment rate equals IRR",
+      "concept": "MIRR purpose"
+    }
+  ]
+}
