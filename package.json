@@ -10,6 +10,7 @@
     "lint": "eslint",
     "test": "vitest",
     "check:raw-files": "bash scripts/check-no-raw-course-files.sh",
+    "check:local-env": "bash scripts/check-local-env.sh",
     "generate:answer-key": "tsx scripts/generate-answer-key.ts"
   },
   "dependencies": {

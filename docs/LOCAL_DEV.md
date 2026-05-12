@@ -34,18 +34,53 @@ node -v
 
 ## Setup
 
-### 1. Clone the Repository
+### 1. Navigate to the Project
 
 ```bash
-git clone https://github.com/your-org/fin317-analyst-desk.git
-cd fin317-analyst-desk
+cd ~/Desktop/FenriXFinance/fin317-analyst-desk
 ```
 
-### 2. Install Dependencies
+### 2. Quick Setup Checklist
 
-```bash
-pnpm install
-```
+Follow these steps in order:
+
+- [ ] Open **Docker Desktop** and verify with:
+  ```bash
+  docker info
+  ```
+- [ ] Install dependencies:
+  ```bash
+  pnpm install
+  ```
+- [ ] Validate your local environment:
+  ```bash
+  pnpm check:local-env
+  ```
+- [ ] Start local Supabase:
+  ```bash
+  npx supabase start
+  ```
+- [ ] Reset and seed the local database:
+  ```bash
+  npx supabase db reset
+  ```
+- [ ] Get local credentials:
+  ```bash
+  npx supabase status -o env
+  ```
+- [ ] Create `.env.local` from the example:
+  ```bash
+  cp .env.example .env.local
+  ```
+- [ ] Add the local credentials to `.env.local`:
+  - `NEXT_PUBLIC_SUPABASE_URL` — from `npx supabase status -o env` output (`API URL`)
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — from `npx supabase status -o env` output (`anon key`)
+  - `OPENAI_API_KEY` (optional, for AI feedback testing)
+- [ ] Start the dev server:
+  ```bash
+  pnpm dev
+  ```
+- [ ] Open [http://localhost:3000](http://localhost:3000).
 
 ### 3. Environment Variables
 Copy the example environment file:
@@ -55,26 +90,8 @@ cp .env.example .env.local
 ```
 
 Fill in your values:
-- `NEXT_PUBLIC_SUPABASE_URL` and keys from `npx supabase status`
+- `NEXT_PUBLIC_SUPABASE_URL` and keys from `npx supabase status -o env`
 - `OPENAI_API_KEY` (optional for AI feedback testing)
-
-### 4. Start Supabase Locally
-
-```bash
-npx supabase start
-```
-
-This starts the local Postgres, Auth, Storage, and Edge Functions. Note the API URL and anon key printed in the terminal.
-
-Update `.env.local` with the local Supabase credentials.
-
-### 5. Run the Development Server
-
-```bash
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
 
 ## Common Commands
 
