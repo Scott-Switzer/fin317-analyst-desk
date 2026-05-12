@@ -1,16 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { LogIn, User } from "lucide-react";
 import Card from "@/components/ui/Card";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const user = localStorage.getItem("fin317_user");
     if (user) {
       router.replace("/dashboard");
@@ -30,14 +28,6 @@ export default function LoginPage() {
     localStorage.setItem("fin317_user", JSON.stringify(mockUser));
     router.push("/dashboard");
   };
-
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
-        <div className="text-sm text-slate-500">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6">

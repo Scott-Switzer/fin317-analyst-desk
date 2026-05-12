@@ -1,20 +1,23 @@
 import React from "react";
 
-interface Column<T> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface Column<T = any> {
   key: string;
   header: string;
   render?: (row: T) => React.ReactNode;
   className?: string;
 }
 
-interface DataTableProps<T> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface DataTableProps<T = any> {
   columns: Column<T>[];
   data: T[];
   className?: string;
   rowKey?: (row: T, index: number) => string | number;
 }
 
-export default function DataTable<T extends Record<string, any>>({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function DataTable<T = any>({
   columns,
   data,
   className = "",
@@ -37,7 +40,7 @@ export default function DataTable<T extends Record<string, any>>({
             <tr key={rowKey(row, index)} className="hover:bg-slate-800/50">
               {columns.map((col) => (
                 <td key={col.key} className={`px-4 py-3 text-slate-300 ${col.className || ""}`}>
-                  {col.render ? col.render(row) : String(row[col.key] ?? "")}
+                  {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? "")}
                 </td>
               ))}
             </tr>

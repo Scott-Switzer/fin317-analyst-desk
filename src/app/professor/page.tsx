@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -8,8 +8,6 @@ import {
   Users,
   TrendingUp,
   AlertTriangle,
-  BarChart3,
-  FileText,
   CheckCircle2,
   XCircle,
   BookOpen,
@@ -94,21 +92,20 @@ const conceptWeaknesses = [
 
 export default function ProfessorPage() {
   const router = useRouter();
-  const [submissions, setSubmissions] = useState<Submission[]>(mockSubmissions);
-
-  useEffect(() => {
+  const [submissions] = useState<Submission[]>(() => {
+    if (typeof window === "undefined") return mockSubmissions;
     const raw = localStorage.getItem("fin317_submission_project-falcon");
-    if (raw) {
-      try {
-        const parsed: Submission = JSON.parse(raw);
-        if (!mockSubmissions.find((s) => s.submittedAt === parsed.submittedAt)) {
-          setSubmissions((prev) => [parsed, ...prev]);
-        }
-      } catch {
-        // ignore
+    if (!raw) return mockSubmissions;
+    try {
+      const parsed: Submission = JSON.parse(raw);
+      if (!mockSubmissions.find((s) => s.submittedAt === parsed.submittedAt)) {
+        return [parsed, ...mockSubmissions];
       }
+      return mockSubmissions;
+    } catch {
+      return mockSubmissions;
     }
-  }, []);
+  });
 
   const avgScore =
     submissions.reduce((sum, s) => sum + s.score, 0) / (submissions.length || 1);

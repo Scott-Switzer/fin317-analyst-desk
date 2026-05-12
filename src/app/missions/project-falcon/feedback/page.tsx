@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -38,18 +38,16 @@ const aiFeedback = {
 
 export default function FeedbackPage() {
   const router = useRouter();
-  const [submission, setSubmission] = useState<Submission | null>(null);
-
-  useEffect(() => {
+  const [submission] = useState<Submission | null>(() => {
+    if (typeof window === "undefined") return null;
     const raw = localStorage.getItem("fin317_submission_project-falcon");
-    if (raw) {
-      try {
-        setSubmission(JSON.parse(raw));
-      } catch {
-        // ignore
-      }
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as Submission;
+    } catch {
+      return null;
     }
-  }, []);
+  });
 
   const score = submission?.score ?? 0;
   const flags = submission?.flags ?? {};

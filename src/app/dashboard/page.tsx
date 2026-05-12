@@ -64,20 +64,22 @@ const mockMissions = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user] = useState<User | null>(() => {
+    if (typeof window === "undefined") return null;
+    const raw = localStorage.getItem("fin317_user");
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as User;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
-    const raw = localStorage.getItem("fin317_user");
-    if (!raw) {
-      router.replace("/login");
-      return;
-    }
-    try {
-      setUser(JSON.parse(raw));
-    } catch {
+    if (!user) {
       router.replace("/login");
     }
-  }, [router]);
+  }, [user, router]);
 
   if (!user) {
     return (
