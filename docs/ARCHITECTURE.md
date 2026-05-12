@@ -58,6 +58,30 @@ A companion JSON file containing:
 - `rubric`: scoring rules and weights
 - `gradingRules`: special rules (e.g., partial credit, required sections)
 
+## Data Access Layer
+
+Located in `src/lib/data/`:
+- `missions.ts` — scenario loading, mission fetching from Supabase or local JSON fallback.
+- `submissions.ts` — save and fetch submissions with Supabase or localStorage fallback.
+- `professorAnalytics.ts` — analytics computation with mock fallback when Supabase is unavailable.
+
+All data functions gracefully degrade to local demo data if Supabase env vars are absent.
+
+## Supabase Schema
+
+Key tables:
+- `profiles` — extends auth.users with role, rank, xp.
+- `classes` / `class_memberships` — course enrollment.
+- `missions` / `mission_versions` — scenario and answer key versioning.
+- `submissions` / `calculation_results` — student work and deterministic grading output.
+- `ai_feedback` — formative AI feedback JSON.
+- `student_progress` / `badges` / `student_badges` — gamification state.
+- `class_analytics` — precomputed class-level analytics.
+- `event_log` — audit trail.
+
+Migrations live in `supabase/migrations/`.
+Seed data lives in `supabase/seed.sql`.
+
 ## Professor Dashboard
 A protected set of routes (`/professor/*`) that provide:
 - Class overview: average scores, completion rates, time-on-task.
@@ -65,13 +89,18 @@ A protected set of routes (`/professor/*`) that provide:
 - Flagged reviews: submissions where AI confidence is low or professor review is recommended.
 - Scenario management: upload/edit scenarios and answer keys (future).
 
+## AI Feedback Scaffolding
+- `src/lib/ai/feedbackPrompt.ts` — prompt template for formative AI feedback.
+- `src/lib/ai/mockFeedback.ts` — deterministic mock feedback generator for demo environments without OpenAI keys.
+
 ## Local Development Workflow
 1. Clone the public repo.
 2. Install dependencies with `pnpm`.
 3. Start local Supabase stack with `npx supabase start`.
-4. Run Next.js dev server with `pnpm dev`.
-5. Run tests with `pnpm test`.
-6. Run data boundary check with `pnpm check:raw-files`.
+4. Apply migrations: `npx supabase migration up`.
+5. Run Next.js dev server with `pnpm dev`.
+6. Run tests with `pnpm test`.
+7. Run data boundary check with `pnpm check:raw-files`.
 
 ## Deployment
 - **Frontend**: Deploy to Vercel on every push to `main`.

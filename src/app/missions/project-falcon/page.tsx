@@ -17,6 +17,11 @@ import {
 import Card from "@/components/ui/Card";
 import DataTable from "@/components/ui/DataTable";
 import Badge from "@/components/ui/Badge";
+import { getActiveScenario } from "@/lib/data/missions";
+import { saveSubmission } from "@/lib/data/submissions";
+import answerKey from "@/../rubrics/project-falcon.answer-key.v1.json";
+
+const scenario = getActiveScenario();
 
 const schema = z.object({
   marketValueDebt: z.string().min(1, "Required"),
@@ -55,24 +60,6 @@ const cashFlows = [
   { year: 5, fcf: "$34,000,000", capex: "$4,000,000", wcChange: "$900,000", netCF: "$29,100,000" },
 ];
 
-const answerKey: Record<string, number> = {
-  marketValueDebt: 65000000,
-  marketValuePreferred: 12000000,
-  marketValueEquity: 45000000,
-  wd: 0.52,
-  wp: 0.1,
-  ws: 0.38,
-  afterTaxCostOfDebt: 0.0455,
-  costOfPreferred: 0.08,
-  costOfEquity: 0.135,
-  wacc: 0.0871,
-  npv: 8450000,
-  irr: 0.127,
-  mirr: 0.112,
-  payback: 4.2,
-  discountedPayback: 4.8,
-};
-
 function withinTolerance(user: string, expected: number, tol = 0.02) {
   const val = parseFloat(user.replace(/[$,%]/g, ""));
   if (Number.isNaN(val)) return false;
@@ -94,12 +81,53 @@ export default function ProjectFalconPage() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
+    const key = answerKey as unknown as {
+      capitalStructure: {
+        marketValueOfDebt: number;
+        marketValueOfPreferred: number;
+        marketValueOfEquity: number;
+        weights: { wd: number; wp: number; ws: number };
+      };
+      costsOfCapital: {
+        afterTaxCostOfDebt: number;
+        costOfPreferred: number;
+        costOfEquityCAPM: number;
+        wacc: number;
+      };
+      projectMetrics: {
+        npv: number;
+        irr: number;
+        mirr: number;
+        paybackPeriod: number;
+        discountedPaybackPeriod: number;
+      };
+      recommendation: { decision: string };
+    };
+
+    const expected: Record<string, number> = {
+      marketValueDebt: key.capitalStructure.marketValueOfDebt,
+      marketValuePreferred: key.capitalStructure.marketValueOfPreferred,
+      marketValueEquity: key.capitalStructure.marketValueOfEquity,
+      wd: key.capitalStructure.weights.wd,
+      wp: key.capitalStructure.weights.wp,
+      ws: key.capitalStructure.weights.ws,
+      afterTaxCostOfDebt: key.costsOfCapital.afterTaxCostOfDebt,
+      costOfPreferred: key.costsOfCapital.costOfPreferred,
+      costOfEquity: key.costsOfCapital.costOfEquityCAPM,
+      wacc: key.costsOfCapital.wacc,
+      npv: key.projectMetrics.npv,
+      irr: key.projectMetrics.irr,
+      mirr: key.projectMetrics.mirr,
+      payback: key.projectMetrics.paybackPeriod,
+      discountedPayback: key.projectMetrics.discountedPaybackPeriod,
+    };
+
     const newFlags: Record<string, boolean> = {};
     let correct = 0;
-    const keys = Object.keys(answerKey);
+    const keys = Object.keys(expected);
     keys.forEach((k) => {
-      const ok = withinTolerance(data[k as keyof FormData] as string, answerKey[k]);
+      const ok = withinTolerance(data[k as keyof FormData] as string, expected[k]);
       newFlags[k] = ok;
       if (ok) correct++;
     });
@@ -122,6 +150,15 @@ export default function ProjectFalconPage() {
       submittedAt: new Date().toISOString(),
     };
     localStorage.setItem("fin317_submission_project-falcon", JSON.stringify(submission));
+
+    // Attempt Supabase save if configured (best-effort)
+    await saveSubmission({
+      studentId: "demo-001",
+      missionVersionId: "00000000-0000-0000-0000-000000000021",
+      submissionJson: submission,
+      score: pct,
+      maxScore: 100,
+    });
   };
 
   const handleCloseModal = () => {
@@ -140,7 +177,7 @@ export default function ProjectFalconPage() {
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <span className="text-sm font-bold text-slate-50">Project Falcon</span>
+            <span className="text-sm font-bold text-slate-50">{scenario.title}</span>
             <Badge variant="success">Active</Badge>
           </div>
           <span className="text-xs text-slate-500">FIN 317 — Mission 1</span>
@@ -152,9 +189,7 @@ export default function ProjectFalconPage() {
         <Card title="Mission Briefing" className="mb-6" action={<FileText className="h-4 w-4 text-slate-500" />}>
           <div className="space-y-3 text-sm leading-relaxed text-slate-300">
             <p>
-              <strong className="text-slate-100">Objective:</strong> Evaluate the acquisition of Falcon Industries,
-              a mid-market manufacturing target. Compute WACC using the provided capital structure,
-              then run project cash flows through NPV, IRR, MIRR, and payback analyses.
+              <strong className="text-slate-100">Objective:</strong> {scenario.briefing}
             </p>
             <p>
               <strong className="text-slate-100">Deliverable:</strong> Submit your calculated inputs,

@@ -106,3 +106,29 @@ This document records significant architectural and product decisions.
 **Consequences**:
 - All initial engineering efforts prioritize this single end-to-end flow.
 - Future missions will follow the same pattern established by Falcon.
+
+## 2026-05-12: Supabase Schema with Local Fallback
+
+**Decision**: Create a full Supabase schema for persistence, but implement graceful fallbacks to localStorage and mock data when Supabase is not configured.
+
+**Rationale**:
+- Allows demo and development without live Supabase credentials.
+- Ensures the app is never blocked by backend setup.
+- Local fallback simplifies onboarding for new contributors.
+
+**Consequences**:
+- Data functions must handle both Supabase and local paths.
+- Sync logic between local and remote may be needed later.
+
+## 2026-05-12: Mock AI Feedback for Demo
+
+**Decision**: Provide a deterministic mock AI feedback generator (`src/lib/ai/mockFeedback.ts`) that runs when no OpenAI API key is present.
+
+**Rationale**:
+- Demonstrates the AI feedback UX without API costs or keys.
+- Ensures the feedback page is fully functional in demo mode.
+- The mock generator uses score thresholds and flags to produce realistic output.
+
+**Consequences**:
+- Mock feedback is less nuanced than real LLM output.
+- Must clearly label mock feedback as simulated in the UI.

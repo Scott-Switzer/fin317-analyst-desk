@@ -15,6 +15,7 @@ import {
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
+import { generateMockFeedback } from "@/lib/ai/mockFeedback";
 
 interface Submission {
   mission: string;
@@ -22,19 +23,6 @@ interface Submission {
   flags: Record<string, boolean>;
   submittedAt: string;
 }
-
-const aiFeedback = {
-  overall: "Strong quantitative foundation. WACC calculation was close, but watch the market-value weighting of preferred stock.",
-  strengths: [
-    "NPV and IRR logic was sound and well-supported.",
-    "Recommendation explicitly tied to quantitative thresholds.",
-  ],
-  improvements: [
-    "Double-check the after-tax cost of debt — ensure tax shield is applied to the yield, not coupon alone.",
-    "Discounted payback should use WACC as the discount rate.",
-  ],
-  conceptGaps: ["Preferred stock valuation in market-value weights", "MIRR reinvestment rate assumption"],
-};
 
 export default function FeedbackPage() {
   const router = useRouter();
@@ -51,6 +39,7 @@ export default function FeedbackPage() {
 
   const score = submission?.score ?? 0;
   const flags = submission?.flags ?? {};
+  const aiFeedback = generateMockFeedback(score, flags);
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -163,14 +152,14 @@ export default function FeedbackPage() {
 
             <Card title="AI Feedback" action={<MessageSquareText className="h-4 w-4 text-slate-500" />}>
               <div className="space-y-4 text-sm text-slate-300">
-                <p className="leading-relaxed">{aiFeedback.overall}</p>
+                <p className="leading-relaxed">{aiFeedback.summary}</p>
 
                 <div>
                   <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
                     Strengths
                   </div>
                   <ul className="list-disc space-y-1 pl-5">
-                    {aiFeedback.strengths.map((s, i) => (
+                    {aiFeedback.what_went_right.map((s, i) => (
                       <li key={i}>{s}</li>
                     ))}
                   </ul>
@@ -181,23 +170,39 @@ export default function FeedbackPage() {
                     Improvements
                   </div>
                   <ul className="list-disc space-y-1 pl-5">
-                    {aiFeedback.improvements.map((s, i) => (
+                    {aiFeedback.what_to_fix.map((s, i) => (
                       <li key={i}>{s}</li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="rounded-md border border-amber-900/40 bg-amber-950/20 p-3">
-                  <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-amber-400">
-                    Concept Gaps Detected
+                {aiFeedback.concept_misunderstandings.length > 0 && (
+                  <div className="rounded-md border border-amber-900/40 bg-amber-950/20 p-3">
+                    <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-amber-400">
+                      Concept Gaps Detected
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {aiFeedback.concept_misunderstandings.map((gap) => (
+                        <Badge key={gap} variant="warning">
+                          {gap}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {aiFeedback.conceptGaps.map((gap) => (
-                      <Badge key={gap} variant="warning">
-                        {gap}
-                      </Badge>
-                    ))}
+                )}
+
+                <div className="rounded-md border border-slate-800 bg-slate-900/40 p-3">
+                  <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Senior Analyst Review
                   </div>
+                  <p className="text-sm text-slate-300">{aiFeedback.senior_analyst_review}</p>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>Confidence: {Math.round(aiFeedback.confidence * 100)}%</span>
+                  {aiFeedback.professor_review_recommended && (
+                    <Badge variant="warning">Professor Review Recommended</Badge>
+                  )}
                 </div>
               </div>
             </Card>

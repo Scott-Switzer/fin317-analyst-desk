@@ -16,6 +16,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import DataTable from "@/components/ui/DataTable";
 import ProgressBar from "@/components/ui/ProgressBar";
+import { computeMockAnalytics } from "@/lib/data/professorAnalytics";
 
 interface Submission {
   mission: string;
@@ -56,40 +57,6 @@ const mockSubmissions: Submission[] = [
   },
 ];
 
-const commonErrors = [
-  {
-    id: "e1",
-    concept: "After-Tax Cost of Debt",
-    frequency: 34,
-    description: "Students applied tax shield to coupon rate instead of yield to maturity.",
-  },
-  {
-    id: "e2",
-    concept: "Market Value Weights",
-    frequency: 28,
-    description: "Used book values instead of market values for WACC weights.",
-  },
-  {
-    id: "e3",
-    concept: "MIRR Reinvestment Rate",
-    frequency: 22,
-    description: "Confused MIRR reinvestment rate with WACC or cost of equity.",
-  },
-  {
-    id: "e4",
-    concept: "Discounted Payback",
-    frequency: 19,
-    description: "Used nominal cash flows instead of discounted cash flows.",
-  },
-];
-
-const conceptWeaknesses = [
-  { concept: "Preferred Stock Valuation", avgScore: 62, students: 18 },
-  { concept: "MIRR Calculation", avgScore: 58, students: 22 },
-  { concept: "Discounted Payback", avgScore: 71, students: 14 },
-  { concept: "WACC Weight Selection", avgScore: 74, students: 12 },
-];
-
 export default function ProfessorPage() {
   const router = useRouter();
   const [submissions] = useState<Submission[]>(() => {
@@ -106,6 +73,8 @@ export default function ProfessorPage() {
       return mockSubmissions;
     }
   });
+
+  const analytics = computeMockAnalytics();
 
   const avgScore =
     submissions.reduce((sum, s) => sum + s.score, 0) / (submissions.length || 1);
@@ -174,7 +143,7 @@ export default function ProfessorPage() {
               <AlertTriangle className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-slate-50">{commonErrors.length}</div>
+              <div className="text-2xl font-bold text-slate-50">{analytics.commonErrors.length}</div>
               <div className="text-xs text-slate-500">Common Errors</div>
             </div>
           </Card>
@@ -184,7 +153,7 @@ export default function ProfessorPage() {
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-slate-50">{conceptWeaknesses.length}</div>
+              <div className="text-2xl font-bold text-slate-50">{analytics.conceptWeaknesses.length}</div>
               <div className="text-xs text-slate-500">Concept Gaps</div>
             </div>
           </Card>
@@ -195,8 +164,8 @@ export default function ProfessorPage() {
           <div className="space-y-6 lg:col-span-1">
             <Card title="Common Errors">
               <div className="space-y-4">
-                {commonErrors.map((err) => (
-                  <div key={err.id} className="rounded-md border border-slate-800 bg-slate-900/40 p-3">
+                {analytics.commonErrors.map((err) => (
+                  <div key={err.concept} className="rounded-md border border-slate-800 bg-slate-900/40 p-3">
                     <div className="mb-1 flex items-center justify-between">
                       <span className="text-sm font-semibold text-slate-200">{err.concept}</span>
                       <Badge variant="error">{err.frequency}%</Badge>
@@ -209,7 +178,7 @@ export default function ProfessorPage() {
 
             <Card title="Concept Weaknesses">
               <div className="space-y-4">
-                {conceptWeaknesses.map((cw) => (
+                {analytics.conceptWeaknesses.map((cw) => (
                   <div key={cw.concept}>
                     <div className="mb-1 flex items-center justify-between text-sm">
                       <span className="text-slate-300">{cw.concept}</span>
