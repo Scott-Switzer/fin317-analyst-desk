@@ -6,6 +6,7 @@ echo ""
 
 PASS=0
 FAIL=0
+WARN=0
 
 check() {
   local label="$1"
@@ -18,12 +19,32 @@ check() {
   fi
 }
 
+warn_check() {
+  local label="$1"
+  if eval "$2" &>/dev/null; then
+    echo "  PASS  $label"
+    PASS=$((PASS + 1))
+  else
+    echo "  WARN  $label (optional)"
+    WARN=$((WARN + 1))
+  fi
+}
+
 echo "--- Directory ---"
 check "Current directory has package.json" "[ -f package.json ]"
 
 echo ""
 echo "--- Docker ---"
-check "Docker daemon is running" "docker info"
+# Docker check with 3-second timeout to avoid hanging
+if command -v timeout &>/dev/null; then
+  timeout 3 docker info &>/dev/null && echo "  PASS  Docker daemon is running" && PASS=$((PASS + 1)) || echo "  WARN  Docker daemon not responding (needed for local Supabase)"
+elif command -v perl &>/dev/null; then
+  perl -e 'alarm 3; exec @ARGV' -- docker info &>/dev/null && echo "  PASS  Docker daemon is running" && PASS=$((PASS + 1)) || echo "  WARN  Docker daemon not responding (needed for local Supabase)"
+else
+  echo "  WARN  Docker check skipped (no timeout tool available)"
+fi
+WARN=$((WARN + 1))
+echo "  INFO  Hosted Supabase mode does not require Docker"
 
 echo ""
 echo "--- Node / pnpm ---"
@@ -39,10 +60,36 @@ check "supabase/seed.sql exists" "[ -f supabase/seed.sql ]"
 
 echo ""
 echo "--- Environment ---"
-check ".env.local exists" "[ -f .env.local ]"
+HAS_ENV=0
 if [ -f .env.local ]; then
-  check ".env.local has NEXT_PUBLIC_SUPABASE_URL" "grep -q 'NEXT_PUBLIC_SUPABASE_URL=' .env.local"
-  check ".env.local has NEXT_PUBLIC_SUPABASE_ANON_KEY" "grep -q 'NEXT_PUBLIC_SUPABASE_ANON_KEY=' .env.local"
+  echo "  PASS  .env.local exists"
+  PASS=$((PASS + 1))
+  HAS_ENV=1
+  if grep -q 'NEXT_PUBLIC_SUPABASE_URL=..' .env.local; then
+    echo "  PASS  .env.local has NEXT_PUBLIC_SUPABASE_URL"
+    PASS=$((PASS + 1))
+    HAS_ENV=1
+  else
+    echo "  FAIL  .env.local missing NEXT_PUBLIC_SUPABASE_URL"
+    FAIL=$((FAIL + 1))
+  fi
+  if grep -q 'NEXT_PUBLIC_SUPABASE_ANON_KEY=..' .env.local; then
+    echo "  PASS  .env.local has NEXT_PUBLIC_SUPABASE_ANON_KEY"
+    PASS=$((PASS + 1))
+    HAS_ENV=1
+  else
+    echo "  FAIL  .env.local missing NEXT_PUBLIC_SUPABASE_ANON_KEY"
+    FAIL=$((FAIL + 1))
+  fi
+else
+  echo "  WARN  .env.local not found (app runs in fallback mode)"
+  WARN=$((WARN + 1))
+fi
+
+if [ "$HAS_ENV" -eq 1 ]; then
+  echo "  INFO  App will connect to Supabase (hosted or local)"
+else
+  echo "  INFO  App will run in fallback mode (local JSON + mock data)"
 fi
 
 echo ""
@@ -50,8 +97,9 @@ echo "--- installed deps ---"
 check "node_modules/ exists" "[ -d node_modules ]"
 
 echo ""
-echo "=== Result: $PASS passed, $FAIL failed ==="
+echo "=== Result: $PASS passed, $FAIL failed, $WARN warnings ==="
 
 if [ "$FAIL" -gt 0 ]; then
   exit 1
 fi
+exit 0
