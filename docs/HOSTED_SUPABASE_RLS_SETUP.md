@@ -1,15 +1,55 @@
 # Hosted Supabase RLS Setup Guide
 
-## Why the SQL Warning Appeared
+## IMPORTANT: SQL File Choice
 
-The original migration (`20250512000001_init_schema.sql`) created tables but had
-RLS enablement commented out. When you tried to run it in the Supabase Dashboard SQL
-Editor, Supabase warned: "New tables will not have Row Level Security enabled."
+This project provides **two** SQL setup files for the Supabase Dashboard SQL Editor:
 
-This is now fixed. The migration has been updated to enable RLS inline, and a second
-migration adds granular policies.
+| File | Use Case | Supabase Warning? |
+|------|----------|-------------------|
+| `dashboard_safe_demo_setup_nondestructive.sql` | **First-time setup** on a NEW hosted Supabase project | **No** |
+| `dashboard_safe_demo_setup.sql` | Reset/repair (if policies need replacement) | **Yes** ("destructive operations") |
 
-## RLS Is Now Enabled
+**Always use `dashboard_safe_demo_setup_nondestructive.sql` first.**
+Only use `dashboard_safe_demo_setup.sql` if you understand every `DROP POLICY`
+statement and need to replace existing policies.
+
+## Understanding the Supabase SQL Warnings
+
+### What Triggers the Warning
+
+Supabase's SQL Editor flags these keywords as potentially destructive:
+- `DROP` (any DROP statement: TABLE, POLICY, SCHEMA, FUNCTION, TRIGGER)
+- `DELETE` (data deletion)
+- `TRUNCATE` (table truncation)
+- `ALTER TABLE ... DROP` (column/constraint removal)
+
+### Warnings That Are ACCEPTABLE
+
+If you are running `dashboard_safe_demo_setup.sql` (the reset-capable file),
+the `DROP POLICY IF EXISTS` statements are **safe/idempotent**:
+- `IF EXISTS` means they won't fail if the policy doesn't exist
+- They are immediately followed by `CREATE POLICY` (replacement, not removal)
+- They only affect RLS policies, not your data or schema
+
+### Warnings You MUST NOT IGNORE
+
+Never ignore warnings for:
+- `DROP TABLE` without `IF EXISTS` guard
+- `DELETE FROM` without a WHERE clause (or with `WHERE true`)
+- `TRUNCATE` on tables with real data
+- `ALTER TABLE ... DROP COLUMN` on columns you need
+- Any operation you don't fully understand
+
+### The Nondestructive File (Recommended)
+
+`dashboard_safe_demo_setup_nondestructive.sql` avoids ALL of these patterns:
+- Uses `DO $$ BEGIN IF NOT EXISTS ... END $$` blocks instead of `DROP POLICY`
+- Uses `CREATE TABLE IF NOT EXISTS` for schema
+- Uses `INSERT ... ON CONFLICT DO NOTHING` for seed data
+- Contains zero DROP, DELETE, or TRUNCATE statements
+- Should run without triggering Supabase's "destructive operations" warning
+
+## RLS Is Enabled
 
 Row Level Security is enabled on **every** public table:
 
@@ -77,28 +117,36 @@ Row Level Security is enabled on **every** public table:
 4. **Professor analytics writes**: Add policies that allow professors to upsert
    `class_analytics` for their own classes.
 
-## Exact Dashboard Application Order
+## Exact Dashboard Application Order (Recommended: Nondestructive)
 
-1. Go to [Supabase Dashboard](https://supabase.com/dashboard/project/tgyxeawyihzhrzdwvyuy)
-2. Open **SQL Editor** (left sidebar)
-3. Click **New Query**
-4. Copy and paste the **entire** contents of:
+1. Go to your Supabase Dashboard SQL Editor
+2. Click **New Query**
+3. Copy and paste the **entire** contents of:
    ```
-   supabase/dashboard_safe_demo_setup.sql
+   supabase/dashboard_safe_demo_setup_nondestructive.sql
    ```
-5. Click **Run** (or Ctrl+Enter)
-6. Verify with:
+4. Click **Run** (or Ctrl+Enter)
+5. Verify with:
    ```sql
    SELECT count(*) FROM missions;  -- should return 7
    SELECT * FROM badges;           -- should return 5
+   ```
+6. Verify RLS is active:
+   ```sql
+   -- Should be denied (Permission denied for table submissions)
+   INSERT INTO submissions (student_id, mission_version_id)
+   VALUES ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000021');
    ```
 7. Return to the app and configure `.env.local` with your Supabase keys.
 
 ## Security Notes
 
+- **RLS must remain enabled before any browser use.** Never disable RLS on tables
+  that contain real student data.
 - The service-role key (`SUPABASE_SERVICE_ROLE_KEY`) bypasses RLS entirely.
   It must NEVER be exposed to the browser (no `NEXT_PUBLIC_` prefix).
 - The anon key is safe for client use — it respects RLS policies.
+- Service-role keys must never go in browser code or `NEXT_PUBLIC_` variables.
 - All client-side data writes (submissions) require auth + RLS ownership checks.
 - In demo/fallback mode (no `.env.local`), the app uses localStorage and is
   completely self-contained — no database access occurs.
