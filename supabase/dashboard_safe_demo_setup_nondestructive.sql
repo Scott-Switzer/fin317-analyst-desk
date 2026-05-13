@@ -1,8 +1,11 @@
 -- ============================================================================
 -- FIN 317 Analyst Desk — NONDESTRUCTIVE First-Time Hosted Setup
 -- ============================================================================
--- INTENDED FOR: First-time setup on a NEW hosted Supabase project.
--- DO NOT use this if tables/policies already exist with different names.
+-- INTENDED FOR: First-time setup on a BLANK hosted Supabase project
+--               (a project with zero auth.users yet).
+--
+-- WORKS EVEN IF: No Supabase Auth users exist. This file does NOT seed
+--                profiles, classes, class_memberships, or submissions.
 --
 -- THIS FILE CONTAINS ZERO destructive operations:
 --   - No DROP TABLE
@@ -15,6 +18,8 @@
 --   - No ALTER TABLE ... DROP
 --   - No CASCADE (except as FK constraint modifier)
 --   - No commented-out destructive lines
+--   - No INSERT into profiles, classes, class_memberships, or submissions
+--     (profiles references auth.users — inserting fake UUIDs fails on blank projects)
 --
 -- All CREATE TABLE uses IF NOT EXISTS (idempotent).
 -- All INSERT uses ON CONFLICT DO NOTHING (won't wipe existing data).
@@ -384,37 +389,21 @@ REVOKE ALL ON class_analytics FROM anon;
 REVOKE ALL ON event_log FROM anon;
 
 -- ============================================================================
--- SEED / DEMO DATA (idempotent — ON CONFLICT DO NOTHING)
--- Safe for repeated runs. Will not overwrite or delete existing data.
+-- SEED / DEMO DATA — Reference data only (no auth-dependent rows)
 -- ============================================================================
-
--- Demo professor
-INSERT INTO profiles (id, email, full_name, role, rank, xp, xp_to_next)
-VALUES ('00000000-0000-0000-0000-000000000001', 'prof@university.edu', 'Dr. Smith', 'professor', 'Senior Partner', 0, 0)
-ON CONFLICT (id) DO NOTHING;
-
--- Demo students
-INSERT INTO profiles (id, email, full_name, role, rank, xp, xp_to_next)
-VALUES
-  ('00000000-0000-0000-0000-000000000002', 'alex@university.edu', 'Alex Analyst', 'student', 'Junior Analyst', 1250, 2000),
-  ('00000000-0000-0000-0000-000000000003', 'jordan@university.edu', 'Jordan Lee', 'student', 'Junior Analyst', 800, 2000),
-  ('00000000-0000-0000-0000-000000000004', 'taylor@university.edu', 'Taylor Smith', 'student', 'Junior Analyst', 600, 2000),
-  ('00000000-0000-0000-0000-000000000005', 'morgan@university.edu', 'Morgan Chen', 'student', 'Junior Analyst', 1500, 2000)
-ON CONFLICT (id) DO NOTHING;
-
--- Demo class
-INSERT INTO classes (id, name, course_code, professor_id, semester)
-VALUES ('00000000-0000-0000-0000-000000000010', 'FIN 317 — Corporate Finance', 'FIN317', '00000000-0000-0000-0000-000000000001', 'Spring 2026')
-ON CONFLICT (id) DO NOTHING;
-
--- Class memberships
-INSERT INTO class_memberships (class_id, student_id)
-VALUES
-  ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000002'),
-  ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003'),
-  ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000004'),
-  ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000005')
-ON CONFLICT (class_id, student_id) DO NOTHING;
+-- This section seeds ONLY tables that do NOT depend on auth.users:
+--   missions, mission_versions, badges
+--
+-- Auth-dependent tables (profiles, classes, class_memberships, submissions,
+-- student_progress, student_badges, class_analytics, calculation_results,
+-- ai_feedback, event_log) are NOT seeded here because:
+--   1. profiles.id REFERENCES auth.users(id) — seeding fails without real auth users
+--   2. All other auth-dependent tables depend on profiles
+--
+-- To seed auth-dependent demo data, create real Supabase Auth users first,
+-- then run supabase/dashboard_demo_auth_dependent_seed_optional.sql
+-- with the real auth.users.id values.
+-- ============================================================================
 
 -- Project Falcon mission
 INSERT INTO missions (id, slug, title, description, learning_objectives, status)
@@ -508,15 +497,6 @@ VALUES
   ('00000000-0000-0000-0000-000000000034', 'stock-valuer', 'Stock Valuer', 'All stock valuation fields correct', 'bar-chart', '{"field_group":"stock_valuation","accuracy":1.0}')
 ON CONFLICT (id) DO NOTHING;
 
--- Demo submissions
-INSERT INTO submissions (id, student_id, mission_version_id, class_id, submission_json, score, max_score, status, submitted_at)
-VALUES
-  ('00000000-0000-0000-0000-000000000040', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000010', '{}'::jsonb, 92, 100, 'graded', NOW() - INTERVAL '2 days'),
-  ('00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000010', '{}'::jsonb, 74, 100, 'graded', NOW() - INTERVAL '2 days'),
-  ('00000000-0000-0000-0000-000000000042', '00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000010', '{}'::jsonb, 68, 100, 'graded', NOW() - INTERVAL '1 day'),
-  ('00000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000010', '{}'::jsonb, 85, 100, 'graded', NOW() - INTERVAL '1 day')
-ON CONFLICT (id) DO NOTHING;
-
 -- ============================================================================
 -- VERIFICATION QUERIES (optional — comment out or remove before running)
 -- ============================================================================
@@ -524,6 +504,8 @@ ON CONFLICT (id) DO NOTHING;
 -- Should return 7 (Project Falcon + Bond + Stock + WACC Builder + Capital Structure + Dividend + Risk & Return)
 -- SELECT * FROM badges;
 -- Should return 5 badges.
+-- SELECT count(*) FROM profiles;
+-- Should return 0 (no auth-dependent profiles seeded yet — this is expected).
 -- As anon (unauthenticated), try: INSERT INTO submissions (...) VALUES (...);
 -- Should be denied by RLS.
 -- ============================================================================

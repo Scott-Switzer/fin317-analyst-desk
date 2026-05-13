@@ -2,16 +2,39 @@
 
 ## IMPORTANT: SQL File Choice
 
-This project provides **two** SQL setup files for the Supabase Dashboard SQL Editor:
+This project provides **three** SQL setup files for the Supabase Dashboard SQL Editor:
 
-| File | Use Case | Supabase Warning? |
-|------|----------|-------------------|
-| `dashboard_safe_demo_setup_nondestructive.sql` | **First-time setup** on a NEW hosted Supabase project | **No** |
-| `dashboard_safe_demo_setup.sql` | Reset/repair (if policies need replacement) | **Yes** ("destructive operations") |
+| File | Use Case | Supabase Warning? | Requires Auth Users? |
+|------|----------|-------------------|---------------------|
+| `dashboard_safe_demo_setup_nondestructive.sql` | **First-time setup** on a BLANK hosted Supabase project | **No** | **No** |
+| `dashboard_demo_auth_dependent_seed_optional.sql` | Seed demo profiles/classes/submissions | **No** | **Yes** |
+| `dashboard_safe_demo_setup.sql` | Reset/repair (if policies need replacement) | **Yes** ("destructive operations") | No |
 
 **Always use `dashboard_safe_demo_setup_nondestructive.sql` first.**
 Only use `dashboard_safe_demo_setup.sql` if you understand every `DROP POLICY`
 statement and need to replace existing policies.
+
+## Why the FK Error Occurs
+
+The `public.profiles` table has:
+```sql
+id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE
+```
+
+This means **every** profile row's `id` must match a real `auth.users.id`.
+Inserting fake/placeholder UUIDs (e.g., `00000000-0000-0000-0000-000000000001`)
+will fail with:
+
+```
+ERROR: 23503: insert or update on table "profiles" violates foreign key
+constraint "profiles_id_fkey"
+DETAIL: Key (id)=(...) is not present in table "users".
+```
+
+**This is expected behavior on a blank Supabase project.** The
+`dashboard_safe_demo_setup_nondestructive.sql` file does NOT insert into
+`profiles` — it only creates the table and enables RLS. Profiles, classes,
+memberships, and submissions are seeded separately (see Setup Order below).
 
 ## Understanding the Supabase SQL Warnings
 
@@ -47,6 +70,7 @@ Never ignore warnings for:
 - Uses `CREATE TABLE IF NOT EXISTS` for schema
 - Uses `INSERT ... ON CONFLICT DO NOTHING` for seed data
 - Contains zero DROP, DELETE, or TRUNCATE statements
+- Contains zero INSERTs into profiles (avoids FK errors on blank projects)
 - Should run without triggering Supabase's "destructive operations" warning
 
 ## RLS Is Enabled
@@ -96,6 +120,59 @@ Row Level Security is enabled on **every** public table:
 | Read class_analytics for their own classes | |
 | Read memberships for their classes | |
 
+## Setup Order (Recommended)
+
+### Step 1: Run the schema/RLS/reference setup
+
+1. Go to your Supabase Dashboard SQL Editor
+2. Click **New Query**
+3. Copy and paste the **entire** contents of:
+   ```
+   supabase/dashboard_safe_demo_setup_nondestructive.sql
+   ```
+4. Click **Run** (or Ctrl+Enter)
+
+This creates all tables, enables RLS, creates all policies, and seeds
+**reference data only** (missions, mission_versions, badges).
+
+5. Verify with:
+   ```sql
+   SELECT count(*) FROM missions;       -- should return 7
+   SELECT * FROM badges;                -- should return 5
+   SELECT count(*) FROM profiles;       -- should return 0 (expected!)
+   ```
+6. Verify RLS is active:
+   ```sql
+   -- Should be denied (Permission denied for table submissions)
+   INSERT INTO submissions (student_id, mission_version_id)
+   VALUES ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000021');
+   ```
+
+### Step 2: Create real demo users
+
+Create real Supabase Auth users via **one** of:
+- Supabase Dashboard → Authentication → Users → Add User
+- Your app's sign-up flow
+- A service-role API call (server-side only)
+
+After creating users, note their `id` values (UUIDs from `auth.users`).
+
+### Step 3: (Optional) Seed auth-dependent demo data
+
+1. Copy `supabase/dashboard_demo_auth_dependent_seed_optional.sql`
+2. Replace every `PLACEHOLDER_*_ID` with the real `auth.users.id` values from Step 2
+3. Run the modified file in the SQL Editor
+
+This seeds profiles, classes, memberships, and demo submissions.
+
+### Step 4: Configure the app
+
+Return to the app and configure `.env.local` with your Supabase keys:
+```
+NEXT_PUBLIC_SUPABASE_URL=https://...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
 ## What Remains Before Production
 
 1. **Server-side submission route**: The client cannot write `calculation_results`,
@@ -117,27 +194,13 @@ Row Level Security is enabled on **every** public table:
 4. **Professor analytics writes**: Add policies that allow professors to upsert
    `class_analytics` for their own classes.
 
-## Exact Dashboard Application Order (Recommended: Nondestructive)
+## Professor Dashboard & Fallback Mode
 
-1. Go to your Supabase Dashboard SQL Editor
-2. Click **New Query**
-3. Copy and paste the **entire** contents of:
-   ```
-   supabase/dashboard_safe_demo_setup_nondestructive.sql
-   ```
-4. Click **Run** (or Ctrl+Enter)
-5. Verify with:
-   ```sql
-   SELECT count(*) FROM missions;  -- should return 7
-   SELECT * FROM badges;           -- should return 5
-   ```
-6. Verify RLS is active:
-   ```sql
-   -- Should be denied (Permission denied for table submissions)
-   INSERT INTO submissions (student_id, mission_version_id)
-   VALUES ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000021');
-   ```
-7. Return to the app and configure `.env.local` with your Supabase keys.
+Until real auth users and submissions are created:
+- The professor dashboard and analytics views will show empty/mocked data.
+- The app may continue in fallback mode (localStorage + mock JSON).
+- This is normal — no real data is accessible until auth users exist.
+- The mission list, badges, and reference content are available for browsing.
 
 ## Security Notes
 
@@ -150,3 +213,4 @@ Row Level Security is enabled on **every** public table:
 - All client-side data writes (submissions) require auth + RLS ownership checks.
 - In demo/fallback mode (no `.env.local`), the app uses localStorage and is
   completely self-contained — no database access occurs.
+- Never commit `.env.local` or any file containing real Supabase keys.
